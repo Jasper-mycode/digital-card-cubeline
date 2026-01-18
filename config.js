@@ -1,9 +1,9 @@
 const USER_PROFILE = {
     info: {
         name: "Jasper",
-        title: "CSIM Student",
+        title: "MIS Student & Developer",
         avatar: "https://github.com/github.png", // 範例圖
-        bio: "測試用網頁"
+        bio: "Integrating AI, Law, and ISO standards to build the future of RegTech."
     },
     theme: {
         primaryColor: "#0984e3" // 企業識別色
