@@ -3,27 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>名片後台 | Admin Console</title>
+    <title>名片設定後台 | Admin Console</title>
     <style>
-        body { display: flex; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh; margin: 0; }
+        /* 商業級 UI 設計規範 */
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-dark: #1e1e1e;
+            --border: #dee2e6;
+            --primary: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --text-main: #212529;
+            --code-text: #a5d6a7;
+        }
+
+        body { display: flex; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; height: 100vh; margin: 0; color: var(--text-main); }
+        
+        /* 左右分割佈局 */
         .panel { flex: 1; padding: 30px; overflow-y: auto; box-sizing: border-box; }
-        .left { background: #f8f9fa; border-right: 1px solid #dee2e6; }
-        .right { background: #212529; color: #f8f9fa; position: relative; }
-        
+        .left { background: var(--bg-light); border-right: 1px solid var(--border); }
+        .right { background: var(--bg-dark); color: #f8f9fa; position: relative; display: flex; flex-direction: column; }
+
+        /* 表單樣式 */
         .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        
-        /* 載入區塊樣式 */
-        .load-section { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #ced4da; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #495057; font-size: 0.9rem; }
+        input, textarea { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 14px; transition: 0.2s; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15); }
+
+        /* 讀取區塊 (Load Section) */
+        .load-section { background: #e2e6ea; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #dbe2e8; }
         .load-row { display: flex; gap: 10px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .btn-primary { background: #0d6efd; color: white; }
-        .btn-primary:hover { background: #0b5ed7; }
-        .btn-success { background: #198754; color: white; }
+        .load-row input { flex: 1; }
         
-        pre { font-family: "SFMono-Regular", Consolas, monospace; white-space: pre-wrap; color: #a5d6a7; }
-        h2 { margin-top: 0; border-bottom: 2px solid #495057; padding-bottom: 10px; }
+        /* 按鈕樣式 */
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 14px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-copy { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-copy:hover { background: rgba(255,255,255,0.2); }
+
+        /* 程式碼預覽區 */
+        pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; white-space: pre-wrap; color: var(--code-text); margin: 0; flex: 1; font-size: 14px; line-height: 1.5; }
+        h2 { margin-top: 0; border-bottom: 2px solid #dee2e6; padding-bottom: 15px; margin-bottom: 20px; }
+        .section-title { font-size: 0.85rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin: 25px 0 15px 0; letter-spacing: 0.5px; }
+        
+        #status-msg { margin-top: 10px; font-size: 0.85rem; height: 1.2em; }
+        .success { color: #198754; }
+        .error { color: #dc3545; }
     </style>
 </head>
 <body>
@@ -31,30 +56,31 @@
     <div class="panel left">
         
         <div class="load-section">
-            <label>步驟 1：輸入 ID 載入目前資料</label>
+            <label>📡 步驟 1：載入雲端資料</label>
             <div class="load-row">
-                <input type="text" id="load-id" placeholder="例如: jasper">
-                <button class="btn btn-primary" onclick="loadUserData()">載入資料</button>
+                <input type="text" id="load-id" placeholder="輸入 User ID (例如: jasper)">
+                <button class="btn btn-primary" onclick="loadUserData()">讀取 Config</button>
             </div>
-            <small style="color: #6c757d; display: block; margin-top: 5px;">*將從 GitHub Pages 讀取目前的 config.js</small>
+            <div id="status-msg"></div>
         </div>
 
-        <h2>步驟 2：編輯內容</h2>
+        <h2>✏️ 步驟 2：編輯內容</h2>
         
+        <div class="section-title">基本資料 (Profile Info)</div>
         <div class="form-group">
             <label>姓名 (Name)</label>
-            <input type="text" id="inp-name" oninput="generate()">
+            <input type="text" id="inp-name" placeholder="您的名字" oninput="generate()">
         </div>
         <div class="form-group">
             <label>職稱 (Title)</label>
-            <input type="text" id="inp-title" oninput="generate()">
+            <input type="text" id="inp-title" placeholder="您的職稱" oninput="generate()">
         </div>
         <div class="form-group">
             <label>簡介 (Bio)</label>
-            <textarea id="inp-bio" rows="3" oninput="generate()"></textarea>
+            <textarea id="inp-bio" rows="3" placeholder="一句話介紹自己..." oninput="generate()"></textarea>
         </div>
 
-        <h3>社群連結</h3>
+        <div class="section-title">社群連結 (Links)</div>
         <div class="form-group">
             <label>Instagram</label>
             <input type="text" id="inp-instagram" class="link-input" data-key="instagram" oninput="generate()">
@@ -68,5 +94,167 @@
             <input type="text" id="inp-github" class="link-input" data-key="github" oninput="generate()">
         </div>
         <div class="form-group">
-            <label>Email</label>
-            <input type="
+            <label>Email (mailto:)</label>
+            <input type="text" id="inp-email" class="link-input" data-key="email" placeholder="mailto:user@example.com" oninput="generate()">
+        </div>
+        <div class="form-group">
+            <label>Website</label>
+            <input type="text" id="inp-website" class="link-input" data-key="website" oninput="generate()">
+        </div>
+    </div>
+
+    <div class="panel right">
+        <h2 style="border-color: #495057; font-size: 1.2rem;">📋 步驟 3：複製程式碼</h2>
+        <button class="btn btn-copy" onclick="copyCode()">複製代碼 (Copy)</button>
+        <pre><code id="output-code">// 請先在左側輸入資料...</code></pre>
+    </div>
+
+    <script>
+        // ==========================================
+        // ⚠️ 請修改此處以符合您的 GitHub Repo 設定
+        // ==========================================
+        const GITHUB_USERNAME = "你的GitHub帳號"; // 例如: Jasper-Chen
+        const REPO_NAME = "你的Repo名稱";         // 例如: digital-card
+        // ==========================================
+
+        // 1. 讀取資料邏輯 (Fetch)
+        async function loadUserData() {
+            const userId = document.getElementById('load-id').value.trim();
+            const statusEl = document.getElementById('status-msg');
+
+            if (!userId) {
+                showStatus("請輸入 ID", "error");
+                return;
+            }
+
+            showStatus("正在從 GitHub 讀取...", "normal");
+
+            // 建構 Raw Data URL (加入時間戳記防止快取)
+            const url = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${REPO_NAME}/main/u/${userId}/config.js?t=${Date.now()}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("找不到此使用者的設定檔 (404)");
+
+                const text = await response.text();
+                parseAndHydrate(text);
+                showStatus("✅ 讀取成功！資料已填入表單", "success");
+            } catch (error) {
+                console.error(error);
+                showStatus("❌ 讀取失敗：可能是 ID 錯誤或該使用者尚未建立資料。", "error");
+            }
+        }
+
+        // 2. 解析並填入表單 (Hydration)
+        function parseAndHydrate(jsContent) {
+            try {
+                // 從 JS 檔案中提取 JSON 物件字串 (尋找第一個 { 和最後一個 })
+                const jsonStart = jsContent.indexOf('{');
+                const jsonEnd = jsContent.lastIndexOf('}');
+                
+                if (jsonStart === -1 || jsonEnd === -1) throw new Error("格式解析錯誤");
+
+                const jsonStr = jsContent.substring(jsonStart, jsonEnd + 1);
+                // 注意：這裡假設 config.js 格式是標準 JSON 結構，如果含有 JS 註解可能會解析失敗
+                // 實務上建議 config.js 保持純淨
+                
+                // 使用 Function 建構子來安全解析 (因為它可能包含寬鬆的 JS 語法)
+                // 或者嚴格要求 config.js 必須是標準 JSON 格式
+                // 這裡示範較寬鬆的解析法：
+                const profile = (new Function("return " + jsonStr))();
+
+                // 填入欄位
+                if (profile.info) {
+                    setVal('inp-name', profile.info.name);
+                    setVal('inp-title', profile.info.title);
+                    setVal('inp-bio', profile.info.bio);
+                }
+
+                if (profile.links) {
+                    document.querySelectorAll('.link-input').forEach(input => {
+                        const key = input.dataset.key;
+                        if (profile.links[key]) {
+                            input.value = profile.links[key];
+                        } else {
+                            input.value = "";
+                        }
+                    });
+                }
+                
+                // 重新生成預覽
+                generate();
+
+            } catch (e) {
+                console.error(e);
+                showStatus("⚠️ 資料解析錯誤，請檢查 config.js 格式", "error");
+            }
+        }
+
+        // 3. 生成代碼邏輯 (Generate)
+        function generate() {
+            // 收集基本資料
+            const name = document.getElementById('inp-name').value;
+            const title = document.getElementById('inp-title').value;
+            const bio = document.getElementById('inp-bio').value;
+
+            // 收集連結資料
+            const links = {};
+            document.querySelectorAll('.link-input').forEach(input => {
+                // 即使是空字串也要保留 key，維持結構完整性
+                links[input.dataset.key] = input.value.trim();
+            });
+
+            // 組裝物件
+            const profile = {
+                info: {
+                    name: name,
+                    title: title,
+                    avatar: `https://github.com/${GITHUB_USERNAME}.png`, // 自動使用 GitHub 頭像
+                    bio: bio
+                },
+                theme: {
+                    primaryColor: "#000000"
+                },
+                links: links
+            };
+
+            // 轉成格式化的 JS 代碼
+            const code = `const USER_PROFILE = ${JSON.stringify(profile, null, 4)};`;
+            
+            // 顯示在右側
+            document.getElementById('output-code').textContent = code;
+        }
+
+        // 4. 複製功能
+        function copyCode() {
+            const code = document.getElementById('output-code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                const originalText = btn.textContent;
+                btn.textContent = "已複製！(Copied)";
+                btn.style.background = "#198754";
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = "";
+                }, 2000);
+            });
+        }
+
+        // 工具函式
+        function setVal(id, val) {
+            const el = document.getElementById(id);
+            if(el) el.value = val || "";
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = type;
+            if(type === 'normal') el.style.color = '#6c757d';
+        }
+
+        // 初始化
+        generate();
+    </script>
+</body>
+</html>
